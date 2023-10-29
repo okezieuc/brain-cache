@@ -22,7 +22,6 @@ import { redirect } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { SearchClient } from "algoliasearch";
 import SearchResultListWrapper from "@/components/searchResultListWrapper";
-import SearchIcon from "@/components/SearchIcon";
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
