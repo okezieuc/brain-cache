@@ -21,6 +21,7 @@ import UserContext from "@/utils/userContext";
 import { redirect } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { SearchClient } from "algoliasearch";
+import SearchResultListWrapper from "@/components/searchResultListWrapper";
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
@@ -146,7 +147,7 @@ export default function Home() {
   }, [loading]);
 
   return (
-    <main>
+    <main className="p-12 sm:p-24">
       Brain Cache
       <div>
         <form>
@@ -190,13 +191,17 @@ export default function Home() {
           <button onClick={filterImages}>Search</button>
           <button onClick={loadSavedImages}>Reset Filters</button>
 
-          {storedImageData.map((entry) => (
-            <SavedImageDisplay
-              filePath={entry.imageData.filePath}
-              key={entry.imageData.filePath}
-              tags={entry.tags}
-            />
-          ))}
+          <SearchResultListWrapper>
+            {storedImageData.map((entry) => (
+              <div>
+                <SavedImageDisplay
+                  filePath={entry.imageData.filePath}
+                  key={entry.imageData.filePath}
+                  tags={entry.tags}
+                />
+              </div>
+            ))}
+          </SearchResultListWrapper>
         </div>
       </div>
     </main>

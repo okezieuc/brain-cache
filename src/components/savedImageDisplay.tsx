@@ -28,7 +28,7 @@ export default function SavedImageDisplay({
 
   return (
     <>
-      <img src={imageURL} />
+      <img src={imageURL} className="p-2 sm:p-4 rounded-3xl" />
       <ul>
         {tags.map((tag) => (
           <li key={tag}> {tag}</li>

@@ -2,3 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+.ais-Hits-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 3 rem !important; 
+    display: grid !important;
+}
