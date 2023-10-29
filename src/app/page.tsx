@@ -146,8 +146,11 @@ export default function Home() {
         {searchClient ? (
           <>
             <InstantSearch indexName="brain_cache" searchClient={searchClient}>
-              <div className="right-panel">
-                <SearchBox />
+              <div className="right-panel mb-12">
+                <SearchBox
+                  className="text-5xl border"
+                  placeholder="Search your cache"
+                />
                 <Hits hitComponent={SearchHit} />
               </div>
             </InstantSearch>
