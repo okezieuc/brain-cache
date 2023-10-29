@@ -14,6 +14,8 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as vision from "@google-cloud/vision";
 
+import getSearchKey from "./getSearchKey.js";
+
 admin.initializeApp();
 
 exports.generateBrainCacheEntry = functions.storage
@@ -23,6 +25,7 @@ exports.generateBrainCacheEntry = functions.storage
     const fileBucket = object.bucket;
     const filePath = object.name;
     const contentType = object.contentType; // File content type.
+    const metadata = object.metadata;
 
     if (!(contentType && filePath)) {
       return null;
@@ -61,5 +64,11 @@ exports.generateBrainCacheEntry = functions.storage
       .firestore()
       .collection("brainCacheEntries")
       .doc()
-      .create({ imageData: { fileBucket, filePath }, tags: labelsToSave });
+      .create({
+        imageData: { fileBucket, filePath },
+        tags: labelsToSave,
+        owner: metadata!.owner,
+      });
   });
+
+exports.getSearchKey = getSearchKey;

@@ -31,7 +31,7 @@ export default function SavedImageDisplay({
       <img src={imageURL} />
       <ul>
         {tags.map((tag) => (
-          <li> {tag}</li>
+          <li key={tag}> {tag}</li>
         ))}
       </ul>
     </>

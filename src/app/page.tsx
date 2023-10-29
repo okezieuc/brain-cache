@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import firebaseApp from "@/utils/firebase";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
@@ -17,15 +17,16 @@ import BrainCacheEntry from "@/types/brainCacheEntry";
 import algoliasearch from "algoliasearch/lite";
 import { Hits, InstantSearch, SearchBox } from "react-instantsearch";
 import SearchHit from "@/components/searchHit";
-
-const searchClient = algoliasearch(
-  "I63EDMMDFM",
-  "2270787f30ce5ceea1e90dc066fbcfd6"
-);
+import UserContext from "@/utils/userContext";
+import { redirect } from "next/navigation";
+import { getAuth } from "firebase/auth";
+import { SearchClient } from "algoliasearch";
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
+
+const auth = getAuth(firebaseApp);
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,13 +36,23 @@ export default function Home() {
     Array<BrainCacheEntry>
   >([]);
   const [searchMode, setSearchMode] = useState(false);
+  const [algoliaSearchToken, setAlgoliaSearchToken] = useState<string | null>(
+    null
+  );
+  const [searchClient, setSearchClient] = useState<SearchClient | null>(null);
+
+  const { user, loading } = useContext(UserContext);
 
   const uploadImage = () => {
     const randomFileName: string = uuidv4();
     const newImageRef = ref(storage, randomFileName);
 
     if (selectedFile != undefined) {
-      uploadBytes(newImageRef, selectedFile).then(() => {
+      uploadBytes(newImageRef, selectedFile, {
+        customMetadata: {
+          owner: user?.uid!,
+        },
+      }).then(() => {
         console.log("Uploaded a blob or file!");
         getDownloadURL(newImageRef).then((url) => {
           setUploadedImageURL(url);
@@ -51,7 +62,14 @@ export default function Home() {
   };
 
   async function loadSavedImages() {
-    const querySnapshot = await getDocs(collection(db, "brainCacheEntries"));
+    const q = await query(
+      collection(db, "brainCacheEntries"),
+
+      // we're using this behind an if(user) statement
+      where("owner", "==", user!.uid)
+    );
+
+    const querySnapshot = await getDocs(q);
 
     // this stores data on file names and buckets of fetched images
     const storedImageDataAccumulator: BrainCacheEntry[] = [];
@@ -65,8 +83,41 @@ export default function Home() {
 
   // load a list of all images that have been uploaded
   useEffect(() => {
-    loadSavedImages();
-  }, []);
+    if (user) {
+      console.log(user);
+      loadSavedImages();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    console.log("here");
+    if (auth.currentUser != null) {
+      auth.currentUser
+        .getIdToken()
+        .then(function (token) {
+          // The token is then passed to our getSearchKey Cloud Function
+          // change below to an actual environment variable
+          return fetch(
+            "https://us-central1-" +
+              "brain-cache-3f0b6" +
+              ".cloudfunctions.net/getSearchKey/",
+            {
+              headers: { Authorization: "Bearer " + token },
+            }
+          );
+        })
+        .then(async function (response) {
+          // The Fetch API returns a stream, which we convert into a JSON object.
+          const token = await response.json();
+          console.log(token.key);
+          setAlgoliaSearchToken(token.key);
+          const newSearchClient = algoliasearch("I63EDMMDFM", token.key);
+          // @ts-ignore
+          setSearchClient(newSearchClient);
+          return token;
+        });
+    }
+  }, [auth.currentUser]);
 
   async function filterImages() {
     const q = await query(
@@ -85,6 +136,14 @@ export default function Home() {
 
     setStoredImageData(storedImageDataAccumulator);
   }
+
+  // redirect users who are not logged in to dashboard
+  useEffect(() => {
+    console.log(loading, user);
+    if (loading == false && user == null) {
+      redirect("/auth");
+    }
+  }, [loading]);
 
   return (
     <main>
@@ -114,12 +173,16 @@ export default function Home() {
         </button>
       </div>
       <div className={searchMode ? "block" : "hidden"}>
-        <InstantSearch indexName="brain_cache" searchClient={searchClient}>
-          <div className="right-panel">
-            <SearchBox />
-            <Hits hitComponent={SearchHit} />
-          </div>
-        </InstantSearch>
+        {searchClient ? (
+          <>
+            <InstantSearch indexName="brain_cache" searchClient={searchClient}>
+              <div className="right-panel">
+                <SearchBox />
+                <Hits hitComponent={SearchHit} />
+              </div>
+            </InstantSearch>
+          </>
+        ) : null}
       </div>
       <div className={!searchMode ? "block" : "hidden"}>
         <div>
