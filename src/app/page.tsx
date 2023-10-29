@@ -3,6 +3,8 @@
 import { useState } from "react"
 import firebaseApp from "@/utils/firebase";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
+
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
@@ -13,7 +15,8 @@ export default function Home() {
 
 
   const uploadImage = () => {
-    const newImageRef = ref(storage, 'file.jpg');
+    const randomFileName: string = uuidv4();
+    const newImageRef = ref(storage, randomFileName);
 
     if (selectedFile != undefined) {
       uploadBytes(newImageRef, selectedFile).then((snapshot) => {
