@@ -150,12 +150,13 @@ export default function Home() {
     <main className="p-12 sm:p-24">
       Brain Cache
       <div>
-        <form>
+        <form className="flex items-center space-x-4">
           <input
             type="file"
             onChange={(e) => {
               if (e.target.files) setSelectedFile(e.target.files[0]);
             }}
+            className="w-full border p-2 py-4 rounded-lg"
           />
 
           <button
@@ -163,6 +164,7 @@ export default function Home() {
               e.preventDefault();
               uploadImage();
             }}
+            className="px-2 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out min-w-0"
           >
             Upload image
           </button>
