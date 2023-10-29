@@ -23,6 +23,7 @@ exports.generateBrainCacheEntry = functions.storage
     const fileBucket = object.bucket;
     const filePath = object.name;
     const contentType = object.contentType; // File content type.
+    const metadata = object.metadata;
 
     if (!(contentType && filePath)) {
       return null;
@@ -61,5 +62,9 @@ exports.generateBrainCacheEntry = functions.storage
       .firestore()
       .collection("brainCacheEntries")
       .doc()
-      .create({ imageData: { fileBucket, filePath }, tags: labelsToSave });
+      .create({
+        imageData: { fileBucket, filePath },
+        tags: labelsToSave,
+        owner: metadata!.owner,
+      });
   });

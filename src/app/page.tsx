@@ -45,7 +45,11 @@ export default function Home() {
     const newImageRef = ref(storage, randomFileName);
 
     if (selectedFile != undefined) {
-      uploadBytes(newImageRef, selectedFile).then(() => {
+      uploadBytes(newImageRef, selectedFile, {
+        customMetadata: {
+          owner: user?.uid!,
+        },
+      }).then(() => {
         console.log("Uploaded a blob or file!");
         getDownloadURL(newImageRef).then((url) => {
           setUploadedImageURL(url);
@@ -55,7 +59,14 @@ export default function Home() {
   };
 
   async function loadSavedImages() {
-    const querySnapshot = await getDocs(collection(db, "brainCacheEntries"));
+    const q = await query(
+      collection(db, "brainCacheEntries"),
+
+      // we're using this behind an if(user) statement
+      where("owner", "==", user!.uid)
+    );
+
+    const querySnapshot = await getDocs(q);
 
     // this stores data on file names and buckets of fetched images
     const storedImageDataAccumulator: BrainCacheEntry[] = [];
@@ -69,8 +80,11 @@ export default function Home() {
 
   // load a list of all images that have been uploaded
   useEffect(() => {
-    loadSavedImages();
-  }, []);
+    if (user) {
+      console.log(user);
+      loadSavedImages();
+    }
+  }, [user]);
 
   async function filterImages() {
     const q = await query(
