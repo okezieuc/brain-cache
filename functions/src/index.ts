@@ -52,7 +52,7 @@ exports.generateBrainCacheEntry = functions.storage
     if (labels != null && labels != undefined) {
       labels.forEach((label) => {
         if (label.description != null && label.description != undefined) {
-          labelsToSave.push(label.description);
+          labelsToSave.push(label.description.toLowerCase());
         }
       });
     }

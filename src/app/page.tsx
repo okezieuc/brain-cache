@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import firebaseApp from "@/utils/firebase";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
 import SavedImageDisplay from "@/components/savedImageDisplay";
 import BrainCacheEntry from "@/types/brainCacheEntry";
 
@@ -13,6 +19,7 @@ const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedFile, setSelectedFile] = useState<File>();
   const [uploadedImageURL, setUploadedImageURL] = useState<string>();
   const [storedImageData, setStoredImageData] = useState<
@@ -51,9 +58,32 @@ export default function Home() {
     loadSavedImages();
   }, []);
 
+  async function filterImages() {
+    const q = await query(
+      collection(db, "brainCacheEntries"),
+      where("tags", "array-contains", searchQuery.toLowerCase())
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // this stores data on file names and buckets of filtered images
+    const storedImageDataAccumulator: BrainCacheEntry[] = [];
+
+    querySnapshot.forEach((doc) => {
+      storedImageDataAccumulator.push(doc.data() as BrainCacheEntry);
+    });
+
+    setStoredImageData(storedImageDataAccumulator);
+  }
+
   return (
     <main>
       Brain Cache
+      <div>
+        <input type="text" onChange={(e) => setSearchQuery(e.target.value)} />
+        <button onClick={filterImages}>Search</button>
+        <button onClick={loadSavedImages}>Reset Filters</button>
+      </div>
       <form>
         <input
           type="file"
