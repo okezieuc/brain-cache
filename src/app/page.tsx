@@ -20,11 +20,7 @@ import SearchHit from "@/components/searchHit";
 import UserContext from "@/utils/userContext";
 import { redirect } from "next/navigation";
 import { getAuth } from "firebase/auth";
-
-const searchClient = algoliasearch(
-  "I63EDMMDFM",
-  "2270787f30ce5ceea1e90dc066fbcfd6"
-);
+import { SearchClient } from "algoliasearch";
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
@@ -40,6 +36,10 @@ export default function Home() {
     Array<BrainCacheEntry>
   >([]);
   const [searchMode, setSearchMode] = useState(false);
+  const [algoliaSearchToken, setAlgoliaSearchToken] = useState<string | null>(
+    null
+  );
+  const [searchClient, setSearchClient] = useState<SearchClient | null>(null);
 
   const { user, loading } = useContext(UserContext);
 
@@ -106,9 +106,15 @@ export default function Home() {
             }
           );
         })
-        .then(function (response) {
+        .then(async function (response) {
           // The Fetch API returns a stream, which we convert into a JSON object.
-          return response.json();
+          const token = await response.json();
+          console.log(token.key);
+          setAlgoliaSearchToken(token.key);
+          const newSearchClient = algoliasearch("I63EDMMDFM", token.key);
+          // @ts-ignore
+          setSearchClient(newSearchClient);
+          return token;
         });
     }
   }, [auth.currentUser]);
@@ -167,12 +173,16 @@ export default function Home() {
         </button>
       </div>
       <div className={searchMode ? "block" : "hidden"}>
-        <InstantSearch indexName="brain_cache" searchClient={searchClient}>
-          <div className="right-panel">
-            <SearchBox />
-            <Hits hitComponent={SearchHit} />
-          </div>
-        </InstantSearch>
+        {searchClient ? (
+          <>
+            <InstantSearch indexName="brain_cache" searchClient={searchClient}>
+              <div className="right-panel">
+                <SearchBox />
+                <Hits hitComponent={SearchHit} />
+              </div>
+            </InstantSearch>
+          </>
+        ) : null}
       </div>
       <div className={!searchMode ? "block" : "hidden"}>
         <div>
