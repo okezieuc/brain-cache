@@ -46,15 +46,20 @@ exports.generateBrainCacheEntry = functions.storage
     // Performs label detection on the image file
     const [result] = await client.labelDetection(imageBuffer);
     const labels = result.labelAnnotations;
-    console.log("Labels:");
+
+    const labelsToSave: string[] = [];
 
     if (labels != null && labels != undefined) {
-      labels.forEach((label) => logger.log(label.description));
+      labels.forEach((label) => {
+        if (label.description != null && label.description != undefined) {
+          labelsToSave.push(label.description);
+        }
+      });
     }
 
     return admin
       .firestore()
       .collection("brainCacheEntries")
       .doc()
-      .create({ imageData: { fileBucket, filePath } });
+      .create({ imageData: { fileBucket, filePath }, tags: labelsToSave });
   });
