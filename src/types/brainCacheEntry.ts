@@ -3,6 +3,7 @@ export type BrainCacheEntry = {
     fileBucket: string;
     filePath: string;
   };
+  tags: string[];
 };
 
 export default BrainCacheEntry;

@@ -9,8 +9,10 @@
 
 import * as logger from "firebase-functions/logger";
 
+import * as storage from "firebase-admin/storage";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as vision from "@google-cloud/vision";
 
 admin.initializeApp();
 
@@ -34,9 +36,30 @@ exports.generateBrainCacheEntry = functions.storage
     // Log the download URL
     logger.log("Path: ", fileBucket, filePath);
 
+    const bucket = storage.getStorage().bucket(fileBucket);
+    const downloadResponse = await bucket.file(filePath).download();
+    const imageBuffer = downloadResponse[0];
+
+    // Creates a client
+    const client = new vision.ImageAnnotatorClient();
+
+    // Performs label detection on the image file
+    const [result] = await client.labelDetection(imageBuffer);
+    const labels = result.labelAnnotations;
+
+    const labelsToSave: string[] = [];
+
+    if (labels != null && labels != undefined) {
+      labels.forEach((label) => {
+        if (label.description != null && label.description != undefined) {
+          labelsToSave.push(label.description);
+        }
+      });
+    }
+
     return admin
       .firestore()
       .collection("brainCacheEntries")
       .doc()
-      .create({ imageData: { fileBucket, filePath } });
+      .create({ imageData: { fileBucket, filePath }, tags: labelsToSave });
   });

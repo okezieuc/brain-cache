@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 
 const storage = getStorage(firebaseApp);
 
-export default function SavedImageDisplay({ filePath }: { filePath: string }) {
+export default function SavedImageDisplay({
+  filePath,
+  tags,
+}: {
+  filePath: string;
+  tags: string[];
+}) {
   const [imageURL, setImageURL] = useState<string>();
 
   async function fetchImage() {
@@ -20,5 +26,14 @@ export default function SavedImageDisplay({ filePath }: { filePath: string }) {
     fetchImage();
   }, []);
 
-  return <img src={imageURL} />;
+  return (
+    <>
+      <img src={imageURL} />
+      <ul>
+        {tags.map((tag) => (
+          <li> {tag}</li>
+        ))}
+      </ul>
+    </>
+  );
 }
