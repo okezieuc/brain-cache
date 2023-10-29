@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import firebaseApp from "@/utils/firebase";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
@@ -14,6 +14,15 @@ import {
 import SavedImageDisplay from "@/components/savedImageDisplay";
 import BrainCacheEntry from "@/types/brainCacheEntry";
 
+import algoliasearch from "algoliasearch/lite";
+import { Hits, InstantSearch, SearchBox } from "react-instantsearch";
+import SearchHit from "@/components/searchHit";
+
+const searchClient = algoliasearch(
+  "I63EDMMDFM",
+  "2270787f30ce5ceea1e90dc066fbcfd6"
+);
+
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
@@ -25,6 +34,7 @@ export default function Home() {
   const [storedImageData, setStoredImageData] = useState<
     Array<BrainCacheEntry>
   >([]);
+  const [searchMode, setSearchMode] = useState(false);
 
   const uploadImage = () => {
     const randomFileName: string = uuidv4();
@@ -79,6 +89,14 @@ export default function Home() {
   return (
     <main>
       Brain Cache
+      <div>
+        <InstantSearch indexName="brain_cache" searchClient={searchClient}>
+          <div className="right-panel">
+            <SearchBox />
+            <Hits hitComponent={SearchHit} />
+          </div>
+        </InstantSearch>
+      </div>
       <div>
         <input type="text" onChange={(e) => setSearchQuery(e.target.value)} />
         <button onClick={filterImages}>Search</button>
