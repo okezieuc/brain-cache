@@ -1,17 +1,13 @@
-import { Highlight } from "react-instantsearch";
+import SavedImageDisplay from "./savedImageDisplay";
+import BrainCacheEntry from "@/types/brainCacheEntry";
 
-export default function SearchHit(props: { hit: any }) {
+export default function SearchHit(props: { hit: BrainCacheEntry }) {
   return (
     <div>
-      {/*<img src={props.hit.image} align="left" alt={props.hit.name} />
-        <div className="hit-name">
-          <Highlight attribute="name" hit={props.hit} />
-        </div>
-        <div className="hit-description">
-          <Highlight attribute="description" hit={props.hit} />
-        </div>
-    <div className="hit-price">${props.hit.price}</div>*/}
-      {JSON.stringify(props.hit)}
+      <SavedImageDisplay
+        filePath={props.hit.imageData.filePath}
+        tags={props.hit.tags}
+      />
     </div>
   );
 }
