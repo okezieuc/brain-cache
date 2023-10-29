@@ -182,10 +182,9 @@ export default function Home() {
         <div>
           <SearchResultListWrapper>
             {storedImageData.map((entry) => (
-              <div>
+              <div key={entry.imageData.filePath}>
                 <SavedImageDisplay
                   filePath={entry.imageData.filePath}
-                  key={entry.imageData.filePath}
                   tags={entry.tags}
                 />
               </div>
