@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import firebaseApp from "@/utils/firebase";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
@@ -17,6 +17,8 @@ import BrainCacheEntry from "@/types/brainCacheEntry";
 import algoliasearch from "algoliasearch/lite";
 import { Hits, InstantSearch, SearchBox } from "react-instantsearch";
 import SearchHit from "@/components/searchHit";
+import UserContext from "@/utils/userContext";
+import { redirect } from "next/navigation";
 
 const searchClient = algoliasearch(
   "I63EDMMDFM",
@@ -35,6 +37,8 @@ export default function Home() {
     Array<BrainCacheEntry>
   >([]);
   const [searchMode, setSearchMode] = useState(false);
+
+  const { user, loading } = useContext(UserContext);
 
   const uploadImage = () => {
     const randomFileName: string = uuidv4();
@@ -85,6 +89,14 @@ export default function Home() {
 
     setStoredImageData(storedImageDataAccumulator);
   }
+
+  // redirect users who are not logged in to dashboard
+  useEffect(() => {
+    console.log(loading, user);
+    if (loading == false && user == null) {
+      redirect("/auth");
+    }
+  }, [loading]);
 
   return (
     <main>

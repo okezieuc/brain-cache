@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useContext } from "react";
+import { useState } from "react";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -8,7 +8,6 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import firebaseApp from "@/utils/firebase";
-import UserContext from "@/utils/userContext";
 
 const auth = getAuth(firebaseApp);
 
@@ -16,8 +15,6 @@ export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isSignUpPage, setIsSignUpPage] = useState(true);
-
-  const userData = useContext(UserContext);
 
   function signUp() {
     createUserWithEmailAndPassword(auth, email, password);
@@ -33,7 +30,6 @@ export default function Login() {
 
   return (
     <div>
-      {userData.user ? "logged in" : "signed out"}
       <div>
         <input
           type="text"
