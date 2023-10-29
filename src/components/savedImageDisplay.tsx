@@ -29,11 +29,11 @@ export default function SavedImageDisplay({
   return (
     <>
       <img src={imageURL} className="p-2 sm:p-4 rounded-3xl" />
-      <ul>
+      <div className="truncate mr-6 ml-4">
         {tags.map((tag) => (
-          <li key={tag}> {tag}</li>
+          <span key={tag}> {tag} • </span>
         ))}
-      </ul>
+      </div>
     </>
   );
 }
