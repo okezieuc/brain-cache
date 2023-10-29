@@ -19,6 +19,7 @@ import { Hits, InstantSearch, SearchBox } from "react-instantsearch";
 import SearchHit from "@/components/searchHit";
 import UserContext from "@/utils/userContext";
 import { redirect } from "next/navigation";
+import { getAuth } from "firebase/auth";
 
 const searchClient = algoliasearch(
   "I63EDMMDFM",
@@ -28,6 +29,8 @@ const searchClient = algoliasearch(
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
+
+const auth = getAuth(firebaseApp);
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,6 +88,30 @@ export default function Home() {
       loadSavedImages();
     }
   }, [user]);
+
+  useEffect(() => {
+    console.log("here");
+    if (auth.currentUser != null) {
+      auth.currentUser
+        .getIdToken()
+        .then(function (token) {
+          // The token is then passed to our getSearchKey Cloud Function
+          // change below to an actual environment variable
+          return fetch(
+            "https://us-central1-" +
+              "brain-cache-3f0b6" +
+              ".cloudfunctions.net/getSearchKey/",
+            {
+              headers: { Authorization: "Bearer " + token },
+            }
+          );
+        })
+        .then(function (response) {
+          // The Fetch API returns a stream, which we convert into a JSON object.
+          return response.json();
+        });
+    }
+  }, [auth.currentUser]);
 
   async function filterImages() {
     const q = await query(

@@ -14,6 +14,8 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as vision from "@google-cloud/vision";
 
+import getSearchKey from "./getSearchKey.js";
+
 admin.initializeApp();
 
 exports.generateBrainCacheEntry = functions.storage
@@ -68,3 +70,5 @@ exports.generateBrainCacheEntry = functions.storage
         owner: metadata!.owner,
       });
   });
+
+exports.getSearchKey = getSearchKey;
