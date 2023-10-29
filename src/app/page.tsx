@@ -77,6 +77,7 @@ export default function Home() {
           <SavedImageDisplay
             filePath={entry.imageData.filePath}
             key={entry.imageData.filePath}
+            tags={entry.tags}
           />
         ))}
       </form>
