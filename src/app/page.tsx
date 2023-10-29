@@ -22,6 +22,7 @@ import { redirect } from "next/navigation";
 import { getAuth } from "firebase/auth";
 import { SearchClient } from "algoliasearch";
 import SearchResultListWrapper from "@/components/searchResultListWrapper";
+import SearchIcon from "@/components/SearchIcon";
 
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage(firebaseApp);
@@ -120,24 +121,6 @@ export default function Home() {
     }
   }, [auth.currentUser]);
 
-  async function filterImages() {
-    const q = await query(
-      collection(db, "brainCacheEntries"),
-      where("tags", "array-contains", searchQuery.toLowerCase())
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    // this stores data on file names and buckets of filtered images
-    const storedImageDataAccumulator: BrainCacheEntry[] = [];
-
-    querySnapshot.forEach((doc) => {
-      storedImageDataAccumulator.push(doc.data() as BrainCacheEntry);
-    });
-
-    setStoredImageData(storedImageDataAccumulator);
-  }
-
   // redirect users who are not logged in to dashboard
   useEffect(() => {
     console.log(loading, user);
@@ -148,33 +131,18 @@ export default function Home() {
 
   return (
     <main className="p-12 sm:p-24">
-      Brain Cache
-      <div>
-        <form className="flex items-center space-x-4">
-          <input
-            type="file"
-            onChange={(e) => {
-              if (e.target.files) setSelectedFile(e.target.files[0]);
-            }}
-            className="w-full border p-2 py-4 rounded-lg"
-          />
-
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              uploadImage();
-            }}
-            className="px-2 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out min-w-0"
-          >
-            Upload image
-          </button>
-        </form>
-      </div>
-      <div>
-        <button onClick={() => setSearchMode(!searchMode)}>
-          Activate/Deactivate Search
+      <h1 className="text-6xl font-bold mb-24">
+        Brain Cache<span className="text-blue-500">.</span>
+      </h1>
+      <div className="mb-6">
+        <button
+          onClick={() => setSearchMode(!searchMode)}
+          className="rounded-md px-12 py-2 bg-blue-500 hover:bg-blue-700 text-white"
+        >
+          {searchMode ? "Clear Filters" : "Search"}
         </button>
       </div>
+
       <div className={searchMode ? "block" : "hidden"}>
         {searchClient ? (
           <>
@@ -189,10 +157,27 @@ export default function Home() {
       </div>
       <div className={!searchMode ? "block" : "hidden"}>
         <div>
-          <input type="text" onChange={(e) => setSearchQuery(e.target.value)} />
-          <button onClick={filterImages}>Search</button>
-          <button onClick={loadSavedImages}>Reset Filters</button>
+          <form className="flex items-center space-x-4">
+            <input
+              type="file"
+              onChange={(e) => {
+                if (e.target.files) setSelectedFile(e.target.files[0]);
+              }}
+              className="w-full border p-2 py-4 rounded-lg"
+            />
 
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                uploadImage();
+              }}
+              className="px-2 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out min-w-0"
+            >
+              Upload image
+            </button>
+          </form>
+        </div>
+        <div>
           <SearchResultListWrapper>
             {storedImageData.map((entry) => (
               <div>
